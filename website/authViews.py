@@ -16,9 +16,6 @@ def login():
         if user:
             salt = user.password[:8]
             db_password = user.password[8:]
-            print(user.password)
-            print(salt)
-            print(db_password)
             if verify_password(password, db_password, salt):
                 flash('Logged in successfully!', category='success')
                 login_user(user, remember=True)

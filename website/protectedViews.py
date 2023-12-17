@@ -6,4 +6,4 @@ protectedViews = Blueprint('protectedViews', __name__)
 @protectedViews.route('/home')
 @login_required
 def home():
-    return render_template('home.html', username="Test")
+    return render_template('home.html', username=current_user.name)
