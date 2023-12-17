@@ -3,11 +3,14 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.exceptions import InvalidKey
+from dotenv import load_dotenv
 import re
 import secrets
 import string
+import os
 
-PAPPER = b'papper'
+load_dotenv()
+papper = os.getenv("PAPPER").encode('utf-8')
 
 def is_str_complex(password):
     # Check if the password has at least 8 characters
@@ -33,7 +36,7 @@ def hash_password(password, salt):
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         iterations=100000,
-        salt=salt+PAPPER,
+        salt=salt+papper,
         length=32,
         backend=default_backend()
     )
@@ -46,7 +49,7 @@ def verify_password(password, hashed_password, salt):
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         iterations=100000,
-        salt=salt+PAPPER,
+        salt=salt+papper,
         length=32,
         backend=default_backend()
     )
