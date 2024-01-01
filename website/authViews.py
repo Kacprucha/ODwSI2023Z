@@ -33,8 +33,44 @@ def logout():
     logout_user()
     return redirect(url_for('generalViews.index'))
 
-@authViews.route('/reset')
+@authViews.route('/reset', methods=['GET', 'POST'])
 def forget_password():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        code = request.form.get('code')
+        password1 = request.form.get('new_password')
+        password2 = request.form.get('confirm_password')
+        
+        user = User.query.filter_by(name=username).first()
+        if not user:
+            flash('User of that username doesn\'t exists.', category='error')
+        else:
+            salt = user.password[:8]
+            user_code = user.code
+            
+            if verify_password(code, user_code, salt):
+                if password1 != password2:
+                    flash('Passwords don\'t match.', category='error')
+                elif not is_str_complex(password1):
+                    flash('Password must be at least 8 characters long, has at least one number, has at least one special character and has at least one capital letter.', category='error')
+                else:
+                    password = hash_password(password1, salt)
+                    password = salt + password
+                    code_nh = generate_code(8)
+                    new_code = hash_password(code_nh, salt)
+                    
+                    user.password = password
+                    user.code = new_code
+                    db.session.commit()
+                    
+                    login_user(user, remember=True)
+                    flash('Password changed!', category='sucesses')
+                    flash(f"Your new code for resetting password {code_nh}. Write it down !!!", category='warning')
+                    return redirect(url_for('protectedViews.home'))
+            else:
+                flash('The code is incorrect!', category='error')
+                    
+                
     return render_template('reset_password.html')
 
 @authViews.route('/register', methods=['GET', 'POST'])
@@ -57,13 +93,15 @@ def register():
             salt = generate_random_salt(8)
             password = hash_password(password1, salt)
             password = salt + password
-            code = hash_password(generate_code(8), salt)
+            code_nh = generate_code(8)
+            code = hash_password(code_nh, salt)
             
             new_user = User(name=username, password=password, code=code)
             db.session.add(new_user)
             db.session.commit()
-            login_user(user, remember=True)
+            login_user(new_user, remember=True)
             flash('Account created!', category='sucesses')
+            flash(f"Your code for resetting password {code_nh}. Write it down !!!", category='warning')
             return redirect(url_for('protectedViews.home'))
             
     return render_template('register.html')
