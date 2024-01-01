@@ -3,6 +3,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from .authMethods import is_str_complex, hash_password, generate_random_salt, generate_code, verify_password, defense_againts_sql_attack
 from .models import User
 from . import db
+import time
 
 authViews = Blueprint('authViews', __name__)
 
@@ -16,6 +17,9 @@ def login():
         if user:
             salt = user.password[:8]
             db_password = user.password[8:]
+            
+            time.sleep(2.3)
+            
             if verify_password(password, db_password, salt):
                 flash('Logged in successfully!', category='success')
                 login_user(user, remember=True)
