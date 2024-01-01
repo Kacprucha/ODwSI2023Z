@@ -32,6 +32,24 @@ def is_str_complex(password):
     # If all conditions are met, return True
     return True
 
+def defense_againts_sql_attack(input_string):
+    sql_keywords = ['OR', 'UNION', 'DROP']
+    
+    # Check if has a forbidden symbols
+    if re.search(r"[`;=-]", input_string):
+        return False
+    
+    # Check if there is a space in string
+    if input_string.find(' ') != -1:
+        return False
+    
+    # Check if there is a forbiden word in input
+    for keyword in sql_keywords:
+        if keyword in input_string.upper():
+            return False
+    
+    return True
+
 def hash_password(password, salt):
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
