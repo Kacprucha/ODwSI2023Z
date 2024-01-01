@@ -14,6 +14,7 @@ class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Integer)
     purpose = db.Column(db.String(200))
+    accepted = db.Column(db.Boolean)
     date = db.Column(db.DateTime(timezone=True), default=func.now())
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     borrower_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
