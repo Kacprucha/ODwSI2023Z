@@ -56,10 +56,40 @@
                 <div class="card-header">
                     <h3 class="text-center">Welcome, {{ username }}!</h3>
                 </div>
-                <div class="card-body">
-                    <p>This is the main dashboard. You can customize this page based on your application's requirements.</p>
-                    <p>For example, you can display user-specific information, recent activities, or any other relevant content.</p>
+                <!-- Buttons to make a loan and pay a debt -->
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-4">
+                            <form action="/home" method="post">
+                                <button type="submit" class="btn btn-danger">Make a Loan</button>
+                            </form>
+                        </div>
+                        <div class="col-4">
+                            <form action="/home" method="post">
+                                <button type="submit" class="btn btn-success">Pay Debt</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
+                <div class="card-body">
+                    <p>This is the main dashboard. Here you can see what ammount of mony you owe to other users.</p>
+                </div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Debt Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.debt_amount }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
