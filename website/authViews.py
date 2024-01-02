@@ -1,7 +1,7 @@
 from flask import Blueprint, Flask, render_template, request, flash, redirect, url_for
 from flask_login import login_user, login_required, logout_user, current_user
 from .authMethods import is_str_complex, hash_password, generate_random_salt, generate_code, verify_password, defense_againts_sql_attack
-from .models import User
+from .models import User, Loan
 from . import db
 import time
 
@@ -23,6 +23,22 @@ def login():
             if verify_password(password, db_password, salt):
                 flash('Logged in successfully!', category='success')
                 login_user(user, remember=True)
+                
+                pending_loans = db.session.query(
+                        User.name.label('user_name'),
+                        Loan.amount,
+                        Loan.purpose
+                    ).join(
+                        Loan, 
+                        Loan.owner_id == User.id
+                    ).filter(
+                        Loan.borrower_id == user.id, 
+                        Loan.accepted.is_(False)
+                    ).all()
+                
+                if len(pending_loans) > 0:
+                    flash(f"You have {len(pending_loans)} awaiting requests.")
+                    
                 return redirect(url_for('protectedViews.home'))
             else:
                 flash('Incorrect password, try again.', category='error')
