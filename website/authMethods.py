@@ -90,6 +90,7 @@ def verify_password(password, hashed_password, salt):
     try:
         kdf.verify(password.encode('utf-8'), hashed_password)
     except InvalidKey as e:
+        print(e)
         result = False
     else:
         result = True
