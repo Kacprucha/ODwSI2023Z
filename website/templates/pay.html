@@ -1,11 +1,9 @@
-<!-- templates/make_loan.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Make a Loan</title>
+    <title>Pay a Loan</title>
 
     <!-- Bootstrap CSS link (you can use CDN or download and link locally) -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -22,6 +20,9 @@
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="/home">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/accept-request">Requests</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">Logout</a>
@@ -61,15 +62,24 @@
                     </div>
 
                     <!-- Loan Payment Form using Bootstrap classes -->
-                    <form action="/home" method="post">
+                    <form action="/pay" method="POST">
                         <div class="form-group">
-                            <label for="username">Username:</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
+                            <label for="username">Choose a User:</label>
+                            <select class="form-control" id="username" name="username" required>
+                                {% for user_name in user_names %}
+                                    <option value="{{ user_name }}">{{ user_name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
 
                         <div class="form-group">
                             <label for="amount">Payment Amount:</label>
-                            <input type="number" class="form-control" id="amount" name="amount" required>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">PLN</span>
+                                </div>
+                                <input type="number" step="any" class="form-control" id="amount" name="amount" required>
+                            </div>
                         </div>
 
                         <button type="submit" class="btn btn-success mr-2">Submit Payment</button>
