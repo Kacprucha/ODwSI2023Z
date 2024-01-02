@@ -50,6 +50,21 @@ def defense_againts_sql_attack(input_string):
     
     return True
 
+def defense_againts_sql_attack_allow_space(input_string):
+    sql_keywords = ['OR', 'UNION', 'DROP']
+    
+    # Check if has a forbidden symbols
+    if re.search(r"[`;=-]", input_string):
+        return False
+    
+    # Check if there is a forbiden word in input
+    words = input_string.upper().split()
+    for word in words:
+        if word in sql_keywords:
+            return False
+    
+    return True
+
 def hash_password(password, salt):
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
