@@ -39,7 +39,9 @@ def loan():
         if not (onwer_user and borrower_user):
             flash('Unfortunetly the system loged you out or the user you want to borrow mony does not exist. Try log out anf log in again and repeat the operation.', category='error')  
         elif not defense_againts_sql_attack_allow_space(purpose):
-            flash('Purpose can\'t contains characters like: `;=-!', category='error')
+            flash('Purpose can\'t contains forbiden characters!', category='error')
+        elif len(purpose) > 200:
+            flash('Purpose have to contains maximum 200 characters!', category='error')
         elif int(amount) < 0:
             flash('The number of money you want to loan can\'t be nagative!', category='error')
         else:

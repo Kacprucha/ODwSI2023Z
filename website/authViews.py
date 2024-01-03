@@ -105,12 +105,16 @@ def register():
             flash('User of that username already exists.', category='error')
         elif len(username) < 4:
             flash('Username must be greater than 3 characters.', category='error')
+        elif len(username) > 150:
+            flesh('Username must be less then 150 characters.', category='error')
         elif not defense_againts_sql_attack(username):
-            flash('Username can\'t contains characters like: `;=- or spaces!', category='error')
+            flesh('Username can\'t contains forbiden characters or spaces!', category='error')
         elif password1 != password2:
             flash('Passwords don\'t match.', category='error')
         elif not is_str_complex(password1):
             flash('Password must be at least 8 characters long, has at least one number, has at least one special character and has at least one capital letter.', category='error')
+        elif len(password1) > 150:
+            flash('Password must be less then 150 characters.', category='error')
         elif not defense_againts_sql_attack(password1):
             flash('Password can\'t contains characters like: `;=- or spaces!', category='error')
         else:
