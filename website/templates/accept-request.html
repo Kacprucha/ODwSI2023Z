@@ -79,8 +79,8 @@
                                 <td>{{ loan.purpose }}</td>
                                 <td>
                                     {{ loan.data }}
-                                    <button type="button" class="btn btn-success" onClick="acceptLoan( loan.user_name )">Accept</button>
-                                    <button type="button" class="btn btn-danger" onClick="declineLoan( loan.user_name )">Decline</button>
+                                    <button type="button" class="btn btn-success" onClick="acceptLoan( {{ loan.id }} )">Accept</button>
+                                    <button type="button" class="btn btn-danger" onClick="declineLoan( {{ loan.id }} )">Decline</button>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -97,16 +97,27 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <!-- JavaScript functions for handling loan actions -->
-    <script>
-        function acceptLoan(userName) {
-            // Implement logic to accept the loan request for the given user
-            alert('Loan accepted for ' + userName);
+    {% block javascript %}
+    <script type="text/javascript">
+        function acceptLoan(loandId) {
+            fetch("/accept-loan", {
+                    method: "POST",
+                    body: JSON.stringify({ loanId: loandId }),
+                }).then((_res) => {
+                    window.location.href = "/accept-request";
+            });
         }
 
-        function declineLoan(userName) {
-            // Implement logic to decline the loan request for the given user
-            alert('Loan declined for ' + userName);
+        function declineLoan(loandId) {
+            console.log(loandId);
+            fetch("/decline-loan", {
+                    method: "POST",
+                    body: JSON.stringify({ loanId: loandId }),
+                }).then((_res) => {
+                    window.location.href = "/accept-request";
+            });
         }
     </script>
+    {%endblock%}
 </body>
 </html>
