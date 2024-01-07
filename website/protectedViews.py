@@ -1,11 +1,13 @@
-from flask import Blueprint, Flask, render_template, request, flash, redirect
+from flask import Blueprint, Flask, render_template, request, flash, redirect, jsonify, url_for
 from flask_login import login_required, current_user
 from sqlalchemy import func
 from .authMethods import defense_againts_sql_attack_allow_space
 from .models import User, Loan
 from . import db
+import json
 
 protectedViews = Blueprint('protectedViews', __name__)
+global _loan_to_pay
 
 @protectedViews.route('/home')
 @login_required
@@ -17,7 +19,7 @@ def home():
     for user in all_users_except_current:
         total_owed_amount = (
             db.session.query(func.coalesce(func.sum(Loan.amount), 0))
-            .filter(Loan.borrower_id == user.id, Loan.accepted.is_(True))
+            .filter(Loan.owner_id == user.id, Loan.accepted.is_(True))
             .scalar()
         )
 
@@ -57,7 +59,7 @@ def loan():
             db.session.commit()
             flash('Loan added successfully!', 'success')
             
-            return redirect(url_for('home'))
+            return redirect(url_for('protectedViews.home'))
         
     all_user_names = [user.name for user in User.query.all() if user.name != current_user.name]
     
@@ -71,7 +73,8 @@ def accept_request():
     pending_loans = db.session.query(
             User.name.label('user_name'),
             Loan.amount,
-            Loan.purpose
+            Loan.purpose,
+            Loan.id
         ).join(
             Loan, 
             Loan.owner_id == User.id
@@ -82,9 +85,95 @@ def accept_request():
     
     return render_template('accept-request.html', loan_requests=pending_loans)
 
+@protectedViews.route('/choose-loan', methods=['GET', 'POST'])
+@login_required
+def choose_loan():
+    user = User.query.filter_by(name=current_user.name).first()
+    
+    accepted_loans = (
+        Loan.query.filter_by(owner=user, accepted=True)
+        .all()
+    )
+    
+    return render_template('choose-loan.html', loans=accepted_loans)
+
 @protectedViews.route('/pay', methods=['GET', 'POST'])
 @login_required
 def pay():
-    all_user_names = [user.name for user in User.query.all() if user.name != current_user.name]
+    global _loan_to_pay
     
-    return render_template('pay.html', user_names=all_user_names)
+    if request.method == 'GET':
+        loan_id = request.args.get("selectedLoans")
+        _loan_to_pay = Loan.query.get(loan_id)
+        
+    if request.method == 'POST':
+        amount_want_to_pay = request.form.get('amount')
+        amount_to_pay = _loan_to_pay.amount
+        
+        if int(amount_want_to_pay) > int(amount_to_pay):
+            flash('The loan in less then what you want to pay!', category='error')
+        else:
+            loan = Loan.query.get(_loan_to_pay.id)
+            loan.amount = int(amount_to_pay) - int(amount_want_to_pay)
+            db.session.commit()
+            
+            if loan.amount == 0:
+                db.session.delete(loan)
+                db.session.commit()
+                _loan_to_pay = Loan()
+                
+                flash('Congrats you pay your loan!', category='success')
+                
+            return redirect(url_for('protectedViews.home'))   
+    
+    return render_template('pay.html', loan_to_pay=_loan_to_pay)
+
+@protectedViews.route('/accept-loan', methods=['POST'])
+@login_required
+def accept_loan():  
+    loan_jason = json.loads(request.data) # this function expects a JSON from the INDEX.js file 
+    loan_id = loan_jason['loanId']
+    loan = Loan.query.get(loan_id)
+    
+    if loan and loan.borrower_id == current_user.id:
+        loan.accepted = True
+        db.session.commit()
+
+    return jsonify({})
+
+@protectedViews.route('/decline-loan', methods=['POST'])
+@login_required
+def decline_loan():  
+    loan_jason = json.loads(request.data) # this function expects a JSON from the INDEX.js file 
+    loan_id = loan_jason['loanId']
+    loan = Loan.query.get(loan_id)
+    
+    if loan and loan.borrower_id == current_user.id:
+        db.session.delete(loan)
+        db.session.commit()
+
+    return jsonify({})
+
+@protectedViews.route('/accepted-loans')
+@login_required
+def accept_loans():
+    user = User.query.filter_by(name=current_user.name).first()
+    
+    accepted_loans = (
+        Loan.query.filter_by(owner=user, accepted=True)
+        .all()
+    ) 
+    
+    return render_template('accepted-loans.html', user_loans=accepted_loans)
+
+@protectedViews.route('/accepted-borrows')
+@login_required
+def accept_borrows():
+    user = User.query.filter_by(name=current_user.name).first()
+    
+    accepted_borrows = (
+        Loan.query.filter_by(borrower=user, accepted=True)
+        .all()
+    ) 
+    
+    return render_template('accepted-borrows.html', user_borrows=accepted_borrows)
