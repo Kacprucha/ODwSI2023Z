@@ -1,5 +1,6 @@
 from flask import Blueprint, Flask, render_template, request, flash, redirect, url_for
 from flask_login import login_user, login_required, logout_user, current_user
+from sqlalchemy.sql import func
 from .authMethods import is_str_complex, hash_password, generate_random_salt, generate_code, verify_password, defense_againts_sql_attack
 from .models import User, Loan
 from . import db
@@ -38,6 +39,12 @@ def login():
                 
                 if len(pending_loans) > 0:
                     flash(f"You have {len(pending_loans)} awaiting requests.")
+                
+                if user.loans_accepted_when_last_loged < Loan.query.filter_by(owner=user, accepted=True).count():
+                    flash(f"You have {Loan.query.filter_by(owner=user, accepted=True).count() - user.loans_accepted_when_last_loged} accepted loan(s).", category='sucesses')
+                
+                if user.all_loans_when_last_loged > len(user.loans_as_owner):
+                    flash(f"You have {user.all_loans_when_last_loged - len(user.loans_as_owner)} decline loan(s).", category='error')
                     
                 return redirect(url_for('protectedViews.home'))
             else:
@@ -50,6 +57,11 @@ def login():
 @authViews.route('/logout')
 @login_required
 def logout():
+    user = User.query.filter_by(name=current_user.name).first()
+    user.loans_accepted_when_last_loged = Loan.query.filter_by(owner=user, accepted=True).count()
+    user.all_loans_when_last_loged = len(user.loans_as_owner)
+    db.session.commit()
+    
     logout_user()
     return redirect(url_for('generalViews.index'))
 
@@ -81,6 +93,7 @@ def forget_password():
                     
                     user.password = password
                     user.code = new_code
+                    user.password_date_change=func.now()
                     db.session.commit()
                     
                     login_user(user, remember=True)
@@ -121,6 +134,7 @@ def reset_password():
                     
                     user.password = password
                     user.code = new_code
+                    user.password_date_change=func.now()
                     db.session.commit()
                     
                     login_user(user, remember=True)
