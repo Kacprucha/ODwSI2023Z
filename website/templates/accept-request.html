@@ -77,6 +77,7 @@
                                 <th>User Name</th>
                                 <th>Loan Amount</th>
                                 <th>Purpose</th>
+                                <th>Date of payment</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -86,6 +87,7 @@
                                 <td>{{ loan.user_name }}</td>
                                 <td>{{ loan.amount }}</td>
                                 <td>{{ loan.purpose }}</td>
+                                <td>{{ loan.date.strftime('%Y-%m-%d') }}</td>
                                 <td>
                                     {{ loan.data }}
                                     <button type="button" class="btn btn-success" onClick="acceptLoan( {{ loan.id }} )">Accept</button>
