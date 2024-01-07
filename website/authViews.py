@@ -41,9 +41,9 @@ def login():
                     
                 return redirect(url_for('protectedViews.home'))
             else:
-                flash('Incorrect password, try again.', category='error')
+                flash('Login error!', category='error')
         else:
-            flash('Username does not exist.', category='error')
+            flash('Login error', category='error')
             
     return render_template('login.html')
 
@@ -63,7 +63,7 @@ def forget_password():
         
         user = User.query.filter_by(name=username).first()
         if not user:
-            flash('User of that username doesn\'t exists.', category='error')
+            flash('Reset password error!', category='error')
         else:
             salt = user.password[:8]
             user_code = user.code
@@ -88,7 +88,7 @@ def forget_password():
                     flash(f"Your new code for resetting password {code_nh}. Write it down !!!", category='warning')
                     return redirect(url_for('protectedViews.home'))
             else:
-                flash('The code is incorrect!', category='error')
+                flash('Reset password error!', category='error')
                     
                 
     return render_template('reset_password.html')
@@ -116,7 +116,7 @@ def register():
         elif len(password1) > 150:
             flash('Password must be less then 150 characters.', category='error')
         elif not defense_againts_sql_attack(password1):
-            flash('Password can\'t contains characters like: `;=- or spaces!', category='error')
+            flash('Password can\'t contains forbide characters or spaces!', category='error')
         else:
             salt = generate_random_salt(8)
             password = hash_password(password1, salt)
