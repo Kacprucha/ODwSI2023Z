@@ -22,6 +22,12 @@
                     <a class="nav-link" href="/home">Home</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="/accepted-loans">My loans</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/accepted-borrows">My borrows</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="/accept-request">Requests</a>
                 </li>
                 <li class="nav-item">
@@ -64,12 +70,8 @@
                     <!-- Loan Payment Form using Bootstrap classes -->
                     <form action="/pay" method="POST">
                         <div class="form-group">
-                            <label for="username">Choose a User:</label>
-                            <select class="form-control" id="username" name="username" required>
-                                {% for user_name in user_names %}
-                                    <option value="{{ user_name }}">{{ user_name }}</option>
-                                {% endfor %}
-                            </select>
+                            <p>Name of borrower: {{loan_to_pay.borrower.name}}</p>
+                            <p>Ammount to pay: {{loan_to_pay.amount}}</p>
                         </div>
 
                         <div class="form-group">
