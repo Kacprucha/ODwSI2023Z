@@ -188,4 +188,4 @@ def accept_borrows():
 def user_settings():
     user = User.query.filter_by(name=current_user.name).first()
     
-    return render_template('user-settings.html', username=user.name, last_password_change=func.now())
+    return render_template('user-settings.html', username=user.name, last_password_change=user.password_date_change)
