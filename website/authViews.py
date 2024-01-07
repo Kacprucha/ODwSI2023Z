@@ -91,7 +91,47 @@ def forget_password():
                 flash('Reset password error!', category='error')
                     
                 
-    return render_template('reset_password.html')
+    return render_template('reset_password.html', forget_password=True)
+
+@authViews.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def reset_password():
+    if request.method == 'POST':
+        code = request.form.get('code')
+        password1 = request.form.get('new_password')
+        password2 = request.form.get('confirm_password')
+        
+        user = User.query.filter_by(name=current_user.name).first()
+        if not user:
+            flash('Reset password error!', category='error')
+        else:
+            salt = user.password[:8]
+            user_code = user.code
+            
+            if verify_password(code, user_code, salt):
+                if password1 != password2:
+                    flash('Passwords don\'t match.', category='error')
+                elif not is_str_complex(password1):
+                    flash('Password must be at least 8 characters long, has at least one number, has at least one special character and has at least one capital letter.', category='error')
+                else:
+                    password = hash_password(password1, salt)
+                    password = salt + password
+                    code_nh = generate_code(8)
+                    new_code = hash_password(code_nh, salt)
+                    
+                    user.password = password
+                    user.code = new_code
+                    db.session.commit()
+                    
+                    login_user(user, remember=True)
+                    flash('Password changed!', category='sucesses')
+                    flash(f"Your new code for resetting password {code_nh}. Write it down !!!", category='warning')
+                    return redirect(url_for('protectedViews.home'))
+            else:
+                flash('Reset password error!', category='error')
+                    
+                
+    return render_template('reset_password.html', forget_password=False)
 
 @authViews.route('/register', methods=['GET', 'POST'])
 def register():
