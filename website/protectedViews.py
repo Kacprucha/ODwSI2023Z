@@ -177,3 +177,10 @@ def accept_borrows():
     ) 
     
     return render_template('accepted-borrows.html', user_borrows=accepted_borrows)
+
+@protectedViews.route('/user-settings')
+@login_required
+def user_settings():
+    user = User.query.filter_by(name=current_user.name).first()
+    
+    return render_template('user-settings.html', username=user.name, last_password_change=func.now())
