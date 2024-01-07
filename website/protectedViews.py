@@ -1,6 +1,7 @@
 from flask import Blueprint, Flask, render_template, request, flash, redirect, jsonify, url_for
 from flask_login import login_required, current_user
 from sqlalchemy import func
+from datetime import datetime
 from .authMethods import defense_againts_sql_attack_allow_space
 from .models import User, Loan
 from . import db
@@ -34,6 +35,8 @@ def loan():
         borrower_name = request.form.get('username')
         purpose = request.form.get('purpose')
         amount = request.form.get('amount')
+        date = request.form.get('dateToPay')
+        date_object = datetime.strptime(date, '%Y-%m-%d')
         
         onwer_user = User.query.filter_by(name=current_user.name).first()
         borrower_user = User.query.filter_by(name=borrower_name).first()
@@ -50,7 +53,8 @@ def loan():
             new_loan = Loan(
                 amount=int(amount),
                 purpose=purpose,
-                accepted=False,  
+                accepted=False,
+                date=date_object,  
                 owner=onwer_user,
                 borrower=borrower_user
             )
@@ -74,7 +78,8 @@ def accept_request():
             User.name.label('user_name'),
             Loan.amount,
             Loan.purpose,
-            Loan.id
+            Loan.id,
+            Loan.date
         ).join(
             Loan, 
             Loan.owner_id == User.id
